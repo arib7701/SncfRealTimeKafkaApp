@@ -1,0 +1,66 @@
+package ribot.amandine.kafka.app.runnable;
+
+import org.apache.http.HttpException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ribot.amandine.kafka.app.client.SncfRESTClient;
+import ribot.amandine.kafka.app.configuration.AppConfig;
+
+import java.util.concurrent.CountDownLatch;
+
+public class SncfRestThread implements Runnable {
+
+    private Logger log = LoggerFactory.getLogger(SncfRestThread.class.getSimpleName());
+
+    private final AppConfig appConfig;
+    private final ArrayBlockingQueue<Train> trainsQueue;
+    private final CountDownLatch latch;
+    private SncfRESTClient sncfRESTClient;
+
+    public SncfRestThread(AppConfig appConfig, ArrayBlockingQueue<Train> trainsQueue, CountDownLatch latch) {
+        this.appConfig = appConfig;
+        this.trainsQueue = trainsQueue;
+        this.latch = latch;
+        sncfRESTClient = new SncfRESTClient(appConfig.getCourseId(), appConfig.getUdemyPageSize());
+    }
+
+    @Override
+    public void run() {
+        try {
+            Boolean keepOnRunning = true;
+            while (keepOnRunning){
+                List<Train> trains;
+                try {
+                    trains = sncfRESTClient.getNextTrains();
+                    log.info("Fetched " + trains.size() + " reviews");
+                    if (trains.size() == 0){
+                        keepOnRunning = false;
+                    } else {
+                        // this may block if the queue is full - this is flow control
+                        log.info("Queue size :" + trainsQueue.size());
+                        for (Train train : trains){
+                            trainsQueue.put(train);
+                        }
+                    }
+                } catch (HttpException e) {
+                    e.printStackTrace();
+                    Thread.sleep(500);
+                } finally {
+                    Thread.sleep(50);
+                }
+            }
+        } catch (InterruptedException e) {
+            log.warn("REST Client interrupted");
+        } finally {
+            this.close();
+        }
+    }
+
+
+    private void close() {
+        log.info("Closing");
+        sncfRESTClient.close();
+        latch.countDown();
+        log.info("Closed");
+    }
+}
