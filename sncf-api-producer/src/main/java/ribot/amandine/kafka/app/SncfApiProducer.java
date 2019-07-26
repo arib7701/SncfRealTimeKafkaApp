@@ -31,9 +31,9 @@ public class SncfApiProducer {
         AppConfig appConfig = new AppConfig(ConfigFactory.load());
         latch = new CountDownLatch(2);
         executor = Executors.newFixedThreadPool(2);
-        ArrayBlockingQueue<Train> trainsQueue = new ArrayBlockingQueue<>(appConfig.getQueueCapacity());
-        sncfRESTClient = new SncfRestThread(appConfig, trainsQueue, latch);
-        sncfProducer = new SncfAvroProducerThread(appConfig, trainsQueue, latch);
+        ArrayBlockingQueue<Disruption> disruptionsQueue = new ArrayBlockingQueue<>(appConfig.getQueueCapacity());
+        sncfRESTClient = new SncfRestThread(appConfig, disruptionsQueue, latch);
+        sncfProducer = new SncfAvroProducerThread(appConfig, disruptionsQueue, latch);
     }
 
     private void start() {

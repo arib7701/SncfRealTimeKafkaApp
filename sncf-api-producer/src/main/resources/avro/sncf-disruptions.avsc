@@ -1,0 +1,51 @@
+[
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "Train",
+  "fields": [
+    {"name": "id",  "type": "string", "default": null},
+    {"name": "name",  "type": "string", "default": null, "doc": "train number"},
+    {"name": "type",  "type": "string", "default": null, "doc": "train type"},
+    {"name": "display_name",  "type": "string", "default": null, "doc": "train type + train number"}
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "Information",
+  "fields": [
+    {"name": "base_departure_time",  "type": "string", "default": null, "doc": "original departure time"},
+    {"name": "base_arrival_time",  "type": "string", "default": null, "doc": "original arrival time"},
+    {"name": "new_departure_time",  "type": "string", "default": null, "doc": "new arrival time"},
+    {"name": "new_arrival_time",  "type": "string", "default": null, "doc": "new arrival time"},
+    {"name": "departure_status",  "type": "string", "default": null, "doc": "status of departure"},
+    {"name": "arrival_status",  "type": "string", "default": null, "doc": "status of arrival"},
+    {"name": "cause",  "type": "string", "default": null, "doc": "cause of disruption"},
+    {"name": "is_detour",  "type": "boolean", "default": null, "doc": "stop is a detour"}
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "Stop",
+  "fields": [
+    {"name": "id", "type": "string", "default": null, "doc": "stop id"},
+    {"name": "name",  "type": "string", "default": null, "doc": "stop name" },
+    {"name": "latitude",  "type": "string", "default": null, "doc": "stop latitude" },
+    {"name": "longitude",  "type": "string", "default": null, "doc": "stop longitude" },
+    {"name": "times",  "type": { "type": "array", "items": "ribot.amandine.kafka.app.Information"}}
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "Disruption",
+  "fields": [
+    {"name": "id", "type": "string", "default": null, "doc": "disruption id" },
+    {"name": "status", "type": "string", "default": null, "doc": "disruption status" },
+    {"name": "name", "type": "string", "default": null, "doc": "disruption name" },
+    {"name": "message", "type": "string", "default": null, "doc": "disruption message for customer" },
+    {"name": "cause",  "type": "string", "default": null, "doc": "disruption cause"},
+    {"name": "priority",  "type": "string", "default": null, "doc": "disruption priority" },
+    {"name": "train", "type": "ribot.amandine.kafka.app.Train"},
+    {"name": "stops", "type": { "type": "array", "items": "ribot.amandine.kafka.app.Stop"}}
+  ]
+}
+]

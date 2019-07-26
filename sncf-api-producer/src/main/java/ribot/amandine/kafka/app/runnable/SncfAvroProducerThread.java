@@ -8,9 +8,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ribot.amandine.kafka.app.Disruption;
 import ribot.amandine.kafka.app.configuration.AppConfig;
 
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 
 public class SncfAvroProducerThread implements Runnable {
@@ -18,22 +20,22 @@ public class SncfAvroProducerThread implements Runnable {
     private Logger log = LoggerFactory.getLogger(SncfAvroProducerThread.class.getSimpleName());
 
     private final AppConfig appConfig;
-    private final ArrayBlockingQueue<Train> trainsQueue;
+    private final ArrayBlockingQueue<Disruption> disruptionsQueue;
     private final CountDownLatch latch;
-    private final KafkaProducer<Long, Train> kafkaProducer;
+    private final KafkaProducer<Long, Disruption> kafkaProducer;
     private final String targetTopic;
 
     public SncfAvroProducerThread(AppConfig appConfig,
-                                  ArrayBlockingQueue<Train> trainsQueue,
+                                  ArrayBlockingQueue<Disruption> disruptionsQueue,
                                   CountDownLatch latch) {
         this.appConfig = appConfig;
-        this.trainsQueue = trainsQueue;
+        this.disruptionsQueue = disruptionsQueue;
         this.latch = latch;
         this.kafkaProducer = createKafkaProducer(appConfig);
         this.targetTopic = appConfig.getTopicName();
     }
 
-    public KafkaProducer<Long, Train> createKafkaProducer(AppConfig appConfig) {
+    public KafkaProducer<Long, Disruption> createKafkaProducer(AppConfig appConfig) {
         Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, appConfig.getBootstrapServers());
         properties.put(ProducerConfig.ACKS_CONFIG, "all");
@@ -50,16 +52,16 @@ public class SncfAvroProducerThread implements Runnable {
 
     @Override
     public void run() {
-        int trainCount = 0;
+        int disruptionCount = 0;
         try {
-            while (latch.getCount() > 1 || trainsQueue.size() > 0){
-                Train train = trainsQueue.poll();
-                if (train == null) {
+            while (latch.getCount() > 1 || disruptionsQueue.size() > 0){
+                Disruption disruption = disruptionsQueue.poll();
+                if (disruption == null) {
                     Thread.sleep(200);
                 } else {
-                    trainCount += 1;
-                    log.info("Sending train " + trainCount + ": " + train);
-                    kafkaProducer.send(new ProducerRecord<>(targetTopic, train));
+                    disruptionCount += 1;
+                    log.info("Sending disruption " + disruptionCount + ": " + disruption);
+                    kafkaProducer.send(new ProducerRecord<>(targetTopic, disruption));
                     // sleeping to slow down the pace a bit
                     Thread.sleep(appConfig.getProducerFrequencyMs());
                 }

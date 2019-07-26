@@ -10,6 +10,7 @@ public class AppConfig {
     private final String topicName;
     private final Integer queueCapacity;
     private final Integer producerFrequencyMs;
+    private final Integer pageSize;
 
     public AppConfig(Config config) {
         this.bootstrapServers = config.getString("kafka.bootstrap.servers");
@@ -17,6 +18,7 @@ public class AppConfig {
         this.topicName = config.getString("kafka.topic.name");
         this.queueCapacity = config.getInt("app.queue.capacity");
         this.producerFrequencyMs = config.getInt("app.producer.frequency.ms");
+        this.pageSize = config.getInt("app.page.size");
     }
 
 
@@ -38,5 +40,9 @@ public class AppConfig {
 
     public Integer getProducerFrequencyMs() {
         return producerFrequencyMs;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
     }
 }

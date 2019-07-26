@@ -3,9 +3,12 @@ package ribot.amandine.kafka.app.runnable;
 import org.apache.http.HttpException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ribot.amandine.kafka.app.Disruption;
 import ribot.amandine.kafka.app.client.SncfRESTClient;
 import ribot.amandine.kafka.app.configuration.AppConfig;
 
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 
 public class SncfRestThread implements Runnable {
@@ -13,15 +16,15 @@ public class SncfRestThread implements Runnable {
     private Logger log = LoggerFactory.getLogger(SncfRestThread.class.getSimpleName());
 
     private final AppConfig appConfig;
-    private final ArrayBlockingQueue<Train> trainsQueue;
+    private final ArrayBlockingQueue<Disruption> disruptionsQueue;
     private final CountDownLatch latch;
     private SncfRESTClient sncfRESTClient;
 
-    public SncfRestThread(AppConfig appConfig, ArrayBlockingQueue<Train> trainsQueue, CountDownLatch latch) {
+    public SncfRestThread(AppConfig appConfig, ArrayBlockingQueue<Disruption> disruptionsQueue, CountDownLatch latch) {
         this.appConfig = appConfig;
-        this.trainsQueue = trainsQueue;
+        this.disruptionsQueue = disruptionsQueue;
         this.latch = latch;
-        sncfRESTClient = new SncfRESTClient(appConfig.getCourseId(), appConfig.getUdemyPageSize());
+        sncfRESTClient = new SncfRESTClient(appConfig.getPageSize());
     }
 
     @Override
@@ -29,17 +32,17 @@ public class SncfRestThread implements Runnable {
         try {
             Boolean keepOnRunning = true;
             while (keepOnRunning){
-                List<Train> trains;
+                List<Disruption> disruptions;
                 try {
-                    trains = sncfRESTClient.getNextTrains();
-                    log.info("Fetched " + trains.size() + " reviews");
-                    if (trains.size() == 0){
+                    disruptions = sncfRESTClient.getNextDisruptions();
+                    log.info("Fetched " + disruptions.size() + " disruptions");
+                    if (disruptions.size() == 0){
                         keepOnRunning = false;
                     } else {
                         // this may block if the queue is full - this is flow control
-                        log.info("Queue size :" + trainsQueue.size());
-                        for (Train train : trains){
-                            trainsQueue.put(train);
+                        log.info("Queue size :" + disruptionsQueue.size());
+                        for (Disruption disruption : disruptions){
+                            disruptionsQueue.put(disruption);
                         }
                     }
                 } catch (HttpException e) {
