@@ -1,0 +1,30 @@
+[
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "StopStatistic",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "stop id"},
+    {"name": "name",  "type": ["null", "string"], "default": null, "doc": "stop name" },
+    {"name": "latitude",  "type": ["null", "string"], "default": null, "doc": "stop latitude" },
+    {"name": "longitude",  "type": ["null", "string"], "default": null, "doc": "stop longitude" },
+    {"name": "number_disruption",  "type": ["null", "int"], "default": null, "doc": "number of disruptions for this stop"}
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "TrainStatistic",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "stop id"},
+    {"name": "name",  "type": ["null", "string"], "default": null, "doc": "stop name" },
+    {"name": "number_disruption",  "type": ["null", "int"], "default": null, "doc": "number of disruptions for this train"}
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "CauseStatistic",
+  "fields": [
+    {"name": "text", "type": ["null", "string"], "default": null, "doc": "stop id"},
+    {"name": "number_disruption",  "type": ["null", "int"], "default": null, "doc": "number of disruptions for this stop"}
+  ]
+}
+]
