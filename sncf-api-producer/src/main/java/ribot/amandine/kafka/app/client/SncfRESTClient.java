@@ -21,7 +21,8 @@ import java.util.List;
 
 public class SncfRESTClient {
 
-    private Integer currentPage;
+    private String currentDateTime;
+    private String dateTimeMinusMinute;
     private final String username;
     private final String password;
 
@@ -30,11 +31,12 @@ public class SncfRESTClient {
         this.password = appConfig.getPassword();
     }
 
-    public List<Disruption> getNextDisruptions(Integer startPage) throws HttpException {
+    public List<Disruption> getNextDisruptions(String dateTime, String dateTimeMinusOneMinute) throws HttpException {
 
-        currentPage = startPage;
+        currentDateTime = dateTime;
+        dateTimeMinusMinute = dateTimeMinusOneMinute;
 
-        if (currentPage >= 0) {
+        if (currentDateTime != null) {
             return disruptionApi().getDisruptionList();
         }
 
@@ -42,7 +44,8 @@ public class SncfRESTClient {
     }
 
     private DisruptionApiResponse disruptionApi() throws HttpException {
-        String url = "https://api.sncf.com/v1/coverage/sncf/disruptions?start_page=" + currentPage;
+        String url = "https://api.sncf.com/v1/coverage/sncf/disruptions?since=" + dateTimeMinusMinute + "&until=" + currentDateTime + "&count=500";
+        System.out.println("URL " + url);
         HttpResponse<JsonNode> jsonResponse;
         try {
             jsonResponse = Unirest.get(url).basicAuth(username, password).asJson();
@@ -51,16 +54,10 @@ public class SncfRESTClient {
         }
 
         if (jsonResponse.getStatus() == 200) {
+
             JSONObject body = jsonResponse.getBody().getObject();
-
-            JSONObject pagination = body.getJSONObject("pagination");
-
-            Integer totalResult = pagination.getInt("total_result");
-            Integer startPage = pagination.getInt("start_page");
-
             List<Disruption> disruptions = this.convertResults(body.getJSONArray("disruptions"));
-
-            return new DisruptionApiResponse(totalResult, startPage, disruptions);
+            return new DisruptionApiResponse(disruptions);
         }
 
         throw new HttpException("Sncf API Unavailable");
@@ -84,16 +81,18 @@ public class SncfRESTClient {
         JSONObject firstMessageJson;
         String textMessage = null;
 
+        JSONArray impactedObjectsArrayJson = disruptionJson.getJSONArray("impacted_objects");
+        JSONObject firstImpactedObjectsJson = impactedObjectsArrayJson.getJSONObject(0);
+        JSONArray impactedStopsArrayJson = null;
+
         try {
             messagesArrayJson = disruptionJson.getJSONArray("messages");
             firstMessageJson = messagesArrayJson.getJSONObject(0);
             textMessage = firstMessageJson.getString("text");
+            impactedStopsArrayJson = firstImpactedObjectsJson.getJSONArray("impacted_stops");
         } catch (Exception e) {
-            //System.out.println(e);
+            System.out.println(e);
         }
-
-        JSONArray impactedObjectsArrayJson = disruptionJson.getJSONArray("impacted_objects");
-        JSONObject firstImpactedObjectsJson = impactedObjectsArrayJson.getJSONObject(0);
 
         return Disruption.newBuilder()
                 .setId(disruptionJson.getString("id"))
@@ -104,7 +103,7 @@ public class SncfRESTClient {
                 .setName(severityJson.getString("name"))
                 .setMessage(textMessage)
                 .setTrain(jsonToTrain(firstImpactedObjectsJson.getJSONObject("pt_object")))
-                .setStops(jsonToListStop(firstImpactedObjectsJson.getJSONArray("impacted_stops")))
+                .setStops(jsonToListStop(impactedStopsArrayJson))
                 .build();
     }
 
@@ -112,12 +111,12 @@ public class SncfRESTClient {
 
         JSONObject tripJson = trainJson.getJSONObject("trip");
 
-        return Train.newBuilder()
-                .setId(tripJson.getString("id"))
-                .setName(tripJson.getString("name"))
-                .setType("typeUnknown")
-                .setDisplayName(tripJson.getString("name"))
-                .build();
+            return Train.newBuilder()
+                    .setId(tripJson.getString("id"))
+                    .setName(tripJson.getString("name"))
+                    .setType(null)
+                    .setDisplayName(tripJson.getString("name"))
+                    .build();
 
     }
 
@@ -125,9 +124,11 @@ public class SncfRESTClient {
 
         List<Stop> stopsList = new ArrayList<>();
 
-        for (int i = 0; i < stopsArray.length(); i++) {
-            Stop stop = jsonToStops(stopsArray.getJSONObject(i));
-            stopsList.add(stop);
+        if(stopsArray != null) {
+            for (int i = 0; i < stopsArray.length(); i++) {
+                Stop stop = jsonToStops(stopsArray.getJSONObject(i));
+                stopsList.add(stop);
+            }
         }
 
         return stopsList;
@@ -162,7 +163,7 @@ public class SncfRESTClient {
             amendedDepartureTime = stopJson.getString("amended_departure_time");
             amendedArrivalTime = stopJson.getString("amended_arrival_time");
         } catch (Exception e) {
-           //System.out.println(e);
+            System.out.println(e);
         }
 
         return Information.newBuilder()
