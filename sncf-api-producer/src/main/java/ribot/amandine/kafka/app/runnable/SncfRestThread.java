@@ -15,13 +15,12 @@ public class SncfRestThread implements Runnable {
 
     private Logger log = LoggerFactory.getLogger(SncfRestThread.class.getSimpleName());
 
-    private final AppConfig appConfig;
     private final ArrayBlockingQueue<Disruption> disruptionsQueue;
     private final CountDownLatch latch;
     private SncfRESTClient sncfRESTClient;
+    private Integer startPage = 4;
 
     public SncfRestThread(AppConfig appConfig, ArrayBlockingQueue<Disruption> disruptionsQueue, CountDownLatch latch) {
-        this.appConfig = appConfig;
         this.disruptionsQueue = disruptionsQueue;
         this.latch = latch;
         sncfRESTClient = new SncfRESTClient(appConfig);
@@ -33,14 +32,22 @@ public class SncfRestThread implements Runnable {
             Boolean keepOnRunning = true;
             while (keepOnRunning){
                 List<Disruption> disruptions;
+
                 try {
-                    disruptions = sncfRESTClient.getNextDisruptions();
-                    log.info("Fetched " + disruptions.size() + " disruptions");
-                    if (disruptions.size() == 0){
-                        keepOnRunning = false;
-                    } else {
+
+                    disruptions = sncfRESTClient.getNextDisruptions(startPage);
+                    startPage -= 1;
+
+                    System.out.println("Fetched " + disruptions.size() + " disruptions");
+
+                    if(startPage < 0){
+                        System.out.println("Sleep for 2 min before next fetch");
+                        Thread.sleep(120000);
+                        startPage = 4;
+                    }
+                    else {
                         // this may block if the queue is full - this is flow control
-                        log.info("Queue size :" + disruptionsQueue.size());
+                        //System.out.println("Queue size :" + disruptionsQueue.size());
                         for (Disruption disruption : disruptions){
                             disruptionsQueue.put(disruption);
                         }
@@ -53,7 +60,7 @@ public class SncfRestThread implements Runnable {
                 }
             }
         } catch (InterruptedException e) {
-            log.warn("REST Client interrupted");
+            System.out.println("REST Client interrupted");
         } finally {
             this.close();
         }
