@@ -12,6 +12,7 @@ import ribot.amandine.kafka.app.Disruption;
 import ribot.amandine.kafka.app.Information;
 import ribot.amandine.kafka.app.Stop;
 import ribot.amandine.kafka.app.Train;
+import ribot.amandine.kafka.app.configuration.AppConfig;
 import ribot.amandine.kafka.app.model.DisruptionApiResponse;
 
 import java.io.IOException;
@@ -25,9 +26,13 @@ public class SncfRESTClient {
     private Integer itemsPerPage;
     private Integer currentPage = 2;
     private final Integer pageSize;
+    private final String username;
+    private final String password;
 
-    public SncfRESTClient(Integer pageSize) {
-        this.pageSize = pageSize;
+    public SncfRESTClient(AppConfig appConfig) {
+        this.pageSize = appConfig.getPageSize();
+        this.username = appConfig.getUsername();
+        this.password = appConfig.getPassword();
     }
 
     private void init() throws HttpException {
@@ -52,7 +57,7 @@ public class SncfRESTClient {
         String url = "https://api.sncf.com/v1/coverage/sncf/disruptions?start_page="+currentPage;
         HttpResponse<JsonNode> jsonResponse = null;
         try {
-            jsonResponse = Unirest.get(url).basicAuth("96efc7c4-3707-4c3c-838b-7b5b0e30e69e", "")
+            jsonResponse = Unirest.get(url).basicAuth(username, password)
                     .asJson();
         } catch (UnirestException e) {
             throw new HttpException(e.getMessage());

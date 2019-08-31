@@ -11,6 +11,8 @@ public class AppConfig {
     private final Integer queueCapacity;
     private final Integer producerFrequencyMs;
     private final Integer pageSize;
+    private final String username;
+    private final String password;
 
     public AppConfig(Config config) {
         this.bootstrapServers = config.getString("kafka.bootstrap.servers");
@@ -19,6 +21,8 @@ public class AppConfig {
         this.queueCapacity = config.getInt("app.queue.capacity");
         this.producerFrequencyMs = config.getInt("app.producer.frequency.ms");
         this.pageSize = config.getInt("app.page.size");
+        this.username = config.getString("sncf.username");
+        this.password = config.getString("sncf.password");
     }
 
 
@@ -44,5 +48,13 @@ public class AppConfig {
 
     public Integer getPageSize() {
         return pageSize;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

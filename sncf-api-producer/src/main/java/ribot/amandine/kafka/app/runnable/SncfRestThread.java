@@ -24,7 +24,7 @@ public class SncfRestThread implements Runnable {
         this.appConfig = appConfig;
         this.disruptionsQueue = disruptionsQueue;
         this.latch = latch;
-        sncfRESTClient = new SncfRESTClient(appConfig.getPageSize());
+        sncfRESTClient = new SncfRESTClient(appConfig);
     }
 
     @Override
