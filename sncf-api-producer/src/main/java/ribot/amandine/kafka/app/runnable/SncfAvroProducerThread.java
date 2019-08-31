@@ -1,14 +1,14 @@
 package ribot.amandine.kafka.app.runnable;
 
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.clients.producer.*;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ribot.amandine.kafka.app.Disruption;
+import ribot.amandine.kafka.app.Train;
 import ribot.amandine.kafka.app.configuration.AppConfig;
 
 import java.util.Properties;
@@ -22,7 +22,7 @@ public class SncfAvroProducerThread implements Runnable {
     private final AppConfig appConfig;
     private final ArrayBlockingQueue<Disruption> disruptionsQueue;
     private final CountDownLatch latch;
-    private final KafkaProducer<Long, Disruption> kafkaProducer;
+    private final KafkaProducer<String, Disruption> kafkaProducer;
     private final String targetTopic;
 
     public SncfAvroProducerThread(AppConfig appConfig,
@@ -35,7 +35,7 @@ public class SncfAvroProducerThread implements Runnable {
         this.targetTopic = appConfig.getTopicName();
     }
 
-    public KafkaProducer<Long, Disruption> createKafkaProducer(AppConfig appConfig) {
+    public KafkaProducer<String, Disruption> createKafkaProducer(AppConfig appConfig) {
         Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, appConfig.getBootstrapServers());
         properties.put(ProducerConfig.ACKS_CONFIG, "all");
@@ -43,38 +43,44 @@ public class SncfAvroProducerThread implements Runnable {
         properties.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
         properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
-        properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl());
+        properties.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
 
         return new KafkaProducer<>(properties);
     }
 
     @Override
     public void run() {
-        int disruptionCount = 0;
+
         try {
-            while (latch.getCount() > 1 || disruptionsQueue.size() > 0){
+            while (latch.getCount() > 1 || !disruptionsQueue.isEmpty()){
                 Disruption disruption = disruptionsQueue.poll();
                 if (disruption == null) {
                     Thread.sleep(200);
                 } else {
-                    disruptionCount += 1;
-                    log.info("Sending disruption " + disruptionCount + ": " + disruption);
-                    kafkaProducer.send(new ProducerRecord<>(targetTopic, disruption));
+
+                    final ProducerRecord<String, Disruption> record = new ProducerRecord<>(targetTopic, disruption.getId().toString(), disruption);
+
+                    kafkaProducer.send(record, (metadata, exception) -> {
+                        if (exception == null) {
+                            //System.out.println(metadata);
+                        } else {
+                            exception.printStackTrace();
+                        }
+                    });
                     // sleeping to slow down the pace a bit
                     Thread.sleep(appConfig.getProducerFrequencyMs());
                 }
             }
-        } catch (InterruptedException e) {
-            log.warn("Avro Producer interrupted");
-        } finally {
-            close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void close() {
-        log.info("Closing Producer");
+        System.out.println("Closing Producer");
+        kafkaProducer.flush();
         kafkaProducer.close();
         latch.countDown();
     }
