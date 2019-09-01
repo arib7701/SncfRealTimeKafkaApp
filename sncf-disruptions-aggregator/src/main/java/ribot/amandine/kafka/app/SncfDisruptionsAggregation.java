@@ -15,7 +15,6 @@ import java.util.Properties;
 
 public class SncfDisruptionsAggregation {
 
-    private Logger log = LoggerFactory.getLogger(SncfDisruptionsAggregation.class.getSimpleName());
     private AppConfig appConfig;
 
     public static void main(String[] args) {
@@ -39,7 +38,7 @@ public class SncfDisruptionsAggregation {
 //        config.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, "0");
 //        config.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE);
 
-        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
+        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
         config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
         config.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl());
 
@@ -49,6 +48,8 @@ public class SncfDisruptionsAggregation {
     private void start() {
 
         Properties properties = getKafkaStreamsConfig();
-        DisruptionsAggregatorTopology topology = new DisruptionsAggregatorTopology(properties);
+        new DisruptionsAggregatorTopology(properties);
     }
+
+
 }
