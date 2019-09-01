@@ -1,0 +1,80 @@
+[
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "DisruptionStop",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "disruption id"},
+    {"name": "stop_id", "type": ["null", "string"], "default": null, "doc": "stop id"},
+    {"name": "name",  "type": ["null", "string"], "default": null, "doc": "stop name" },
+    {"name": "latitude",  "type": ["null", "string"], "default": null, "doc": "stop latitude" },
+    {"name": "longitude",  "type": ["null", "string"], "default": null, "doc": "stop longitude" },
+    {"name": "updated_at", "type": ["null", "string"], "default": null, "doc": "last update" },
+    {"name": "message", "type": ["null", "string"], "default": null, "doc": "disruption message for customer" }
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "DisruptionStopTrain",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "disruption id"},
+    {"name": "stop_id", "type": ["null", "string"], "default": null, "doc": "stop id"},
+    {"name": "name",  "type": ["null", "string"], "default": null, "doc": "stop name" },
+    {"name": "latitude",  "type": ["null", "string"], "default": null, "doc": "stop latitude" },
+    {"name": "longitude",  "type": ["null", "string"], "default": null, "doc": "stop longitude" },
+    {"name": "updated_at", "type": ["null", "string"], "default": null, "doc": "last update" },
+    {"name": "train_id", "type": ["null", "string"], "default": null, "doc": "train id" },
+    {"name": "train_name", "type": ["null", "string"], "default": null, "doc": "train name" },
+    {"name": "message", "type": ["null", "string"], "default": null, "doc": "disruption message for customer" }
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyDisruptionStop",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "disruption id"},
+    {"name": "stop_id", "type": ["null", "string"], "default": null, "doc": "stop id"}
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyDisruptionStopTrain",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "disruption id"},
+    {"name": "stop_id", "type": ["null", "string"], "default": null, "doc": "stop id"},
+    {"name": "train_id", "type": ["null", "string"], "default": null, "doc": "train id" }
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyStopCause",
+  "fields": [
+    {"name": "name",  "type": ["null", "string"], "default": null, "doc": "stop name" },
+    {"name": "message", "type": ["null", "string"], "default": null, "doc": "disruption message for customer" }
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyStopTrain",
+  "fields": [
+    {"name": "name",  "type": ["null", "string"], "default": null, "doc": "stop name" },
+    {"name": "train_name", "type": ["null", "string"], "default": null, "doc": "train name" }
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyTrainCause",
+  "fields": [
+    {"name": "message", "type": ["null", "string"], "default": null, "doc": "disruption message for customer" },
+    {"name": "train_name", "type": ["null", "string"], "default": null, "doc": "train name" }
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyStopTrainCause",
+  "fields": [
+    {"name": "name",  "type": ["null", "string"], "default": null, "doc": "stop name" },
+    {"name": "message", "type": ["null", "string"], "default": null, "doc": "disruption message for customer" },
+    {"name": "train_name", "type": ["null", "string"], "default": null, "doc": "train name" }
+  ]
+}
+]

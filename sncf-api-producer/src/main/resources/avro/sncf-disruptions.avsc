@@ -55,5 +55,26 @@
   "fields": [
     {"name": "id", "type": ["null", "string"], "default": null, "doc": "disruption id" }
   ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyStop",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "stop id" }
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyTrain",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "train id" }
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyCause",
+  "fields": [
+    {"name": "text", "type": ["null", "string"], "default": null, "doc": "cause text" }
+  ]
 }
 ]
