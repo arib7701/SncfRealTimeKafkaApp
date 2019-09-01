@@ -46,7 +46,14 @@
     {"name": "cause",  "type": ["null", "string"], "default": null, "doc": "disruption cause"},
     {"name": "priority",  "type": ["null", "string"], "default": null, "doc": "disruption priority" },
     {"name": "train", "type": "ribot.amandine.kafka.app.Train"},
-    {"name": "stops", "type": { "type": ["null", "array"], "items": "ribot.amandine.kafka.app.Stop"}}
+    {"name": "stops", "type": { "type": "array", "items": "ribot.amandine.kafka.app.Stop"}}
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "KeyDisruption",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "disruption id" }
   ]
 }
 ]

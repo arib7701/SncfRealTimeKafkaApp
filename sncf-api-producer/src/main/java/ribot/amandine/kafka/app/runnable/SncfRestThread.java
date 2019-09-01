@@ -52,6 +52,11 @@ public class SncfRestThread implements Runnable {
                     disruptions = sncfRESTClient.getNextDisruptions(dateNowFormatted, dateMinusMinuteFormatted);
 
                     System.out.println("Fetched " + disruptions.size() + " disruptions");
+
+                    for (Disruption disruption : disruptions) {
+                        disruptionsQueue.put(disruption);
+                    }
+
                     System.out.println("Sleep for 1 min before next fetch");
 
                     Thread.sleep(120000);
@@ -60,11 +65,6 @@ public class SncfRestThread implements Runnable {
                     dateMinusMinuteFormatted = dateNowFormatted;
                     dateNowFormatted = dateFormatter.format(dateNow);
 
-                    // this may block if the queue is full - this is flow control
-                    //System.out.println("Queue size :" + disruptionsQueue.size());
-                    for (Disruption disruption : disruptions) {
-                        disruptionsQueue.put(disruption);
-                    }
 
                 } catch (HttpException e) {
                     e.printStackTrace();
