@@ -7,11 +7,12 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
-import ribot.amandine.kafka.app.Disruption;
-import ribot.amandine.kafka.app.KeyDisruption;
+import ribot.amandine.kafka.app.*;
 import ribot.amandine.kafka.app.configuration.AppConfig;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 public class ComputeDelaysTopology {
@@ -40,6 +41,78 @@ public class ComputeDelaysTopology {
                 .peek(((key, value) -> System.out.println(value.toString())))
                 .filter((key, value) -> key != null && value != null);
 
+        disruptionKStream
+                .mapValues((value) -> mapToDisruptionDelays((value)))
+                .to(appConfig.getDisruptionDelaysTopicName());
+
         return new KafkaStreams(builder.build(), properties);
+    }
+
+    private DisruptionDelays mapToDisruptionDelays(Disruption disruption) {
+
+        List<Stop> stops = disruption.getStops();
+        List<StopDelays> stopDelays = new ArrayList<>();
+        List<CharSequence> delays = new ArrayList<>();
+        List<CharSequence> causes = new ArrayList<>();
+
+        for (Stop stop : stops) {
+
+            StopDelays stopDelay = StopDelays.newBuilder()
+                    .setId(stop.getId())
+                    .setName(stop.getName())
+                    .setLatitude(stop.getLatitude())
+                    .setLongitude(stop.getLongitude())
+                    .build();
+
+            stopDelays.add(stopDelay);
+            causes.add(stop.getTimes().getCause().toString());
+            delays.add(calculateDelays(stop.getTimes()));
+        }
+
+        return DisruptionDelays.newBuilder()
+                .setId(disruption.getId())
+                .setTrainId(disruption.getTrain().getId())
+                .setTrainName(disruption.getTrain().getName())
+                .setMessage(disruption.getMessage())
+                .setUpdatedAt(disruption.getUpdatedAt())
+                .setStops(stopDelays)
+                .setDelays(delays)
+                .setCauses(causes)
+                .build();
+    }
+
+    private String calculateDelays(Information timeInformation) {
+
+        String calculatedDelay;
+        int calculatedDelayArrival;
+        int calculatedDelayDeparture;
+
+        String plannedArrivalToStation = timeInformation.getBaseArrivalTime().toString();
+        String newArrivalToStation = timeInformation.getNewArrivalTime().toString();
+
+        String plannedDepartureOfStation = timeInformation.getBaseDepartureTime().toString();
+        String newDepartureOfStation = timeInformation.getNewDepartureTime().toString();
+
+
+        if(plannedArrivalToStation == "" || newArrivalToStation == "" || plannedArrivalToStation.equals(newArrivalToStation) ) {
+            calculatedDelayArrival = 0;
+        } else {
+            calculatedDelayArrival = Integer.parseInt(plannedArrivalToStation) - Integer.parseInt(newArrivalToStation);
+        }
+
+        if(plannedDepartureOfStation == "" || newDepartureOfStation == "" || plannedDepartureOfStation.equals(newDepartureOfStation)) {
+            calculatedDelayDeparture = 0;
+        } else {
+            calculatedDelayDeparture = Integer.parseInt(plannedDepartureOfStation) - Integer.parseInt(newDepartureOfStation);
+        }
+
+        if(calculatedDelayDeparture >= calculatedDelayArrival) {
+            calculatedDelay = Integer.toString(calculatedDelayDeparture);
+        }
+        else {
+            calculatedDelay = Integer.toString(calculatedDelayArrival);
+        }
+
+        return calculatedDelay;
     }
 }

@@ -7,6 +7,7 @@ public class AppConfig {
     private final String bootstrapServers;
     private final String schemaRegistryUrl;
     private final String disruptionTopicName;
+    private final String disruptionDelaysTopicName;
     private final String applicationId;
 
 
@@ -15,6 +16,7 @@ public class AppConfig {
         this.bootstrapServers = config.getString("kafka.bootstrap.servers");
         this.schemaRegistryUrl = config.getString("kafka.schema.registry.url");
         this.disruptionTopicName = config.getString("kafka.disruption.topic.name");
+        this.disruptionDelaysTopicName = config.getString("kafka.disruption.delays.topic.name");
         this.applicationId = config.getString("kafka.streams.application.id");
     }
 
@@ -27,6 +29,10 @@ public class AppConfig {
     }
 
     public String getDisruptionTopicName() {
+        return disruptionTopicName;
+    }
+
+    public String getDisruptionDelaysTopicName() {
         return disruptionTopicName;
     }
 
