@@ -59,18 +59,23 @@ public class SncfAvroProducerThread implements Runnable {
                     Thread.sleep(200);
                 } else {
 
-                    final ProducerRecord<KeyDisruption, Disruption> record = new ProducerRecord<>(
-                            targetTopic,
-                            KeyDisruption.newBuilder().setId(disruption.getId()).build(),
-                            disruption);
 
-                    kafkaProducer.send(record, (metadata, exception) -> {
-                        if (exception == null) {
-                            //System.out.println(metadata);
-                        } else {
-                            exception.printStackTrace();
-                        }
-                    });
+                    if(disruption.getMessage() != null && !disruption.getStops().isEmpty())
+                    {
+                        final ProducerRecord<KeyDisruption, Disruption> record = new ProducerRecord<>(
+                                targetTopic,
+                                KeyDisruption.newBuilder().setId(disruption.getId()).build(),
+                                disruption);
+
+                        kafkaProducer.send(record, (metadata, exception) -> {
+                            if (exception == null) {
+                                //System.out.println(metadata);
+                            } else {
+                                exception.printStackTrace();
+                            }
+                        });
+                    }
+
                     // sleeping to slow down the pace a bit
                     Thread.sleep(appConfig.getProducerFrequencyMs());
                 }
