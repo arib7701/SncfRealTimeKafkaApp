@@ -1,0 +1,27 @@
+[
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "StopDelays",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "stop id"},
+    {"name": "name",  "type": ["null", "string"], "default": null, "doc": "stop name" },
+    {"name": "latitude",  "type": ["null", "string"], "default": null, "doc": "stop latitude" },
+    {"name": "longitude",  "type": ["null", "string"], "default": null, "doc": "stop longitude" }
+  ]
+},
+{"namespace": "ribot.amandine.kafka.app",
+  "type": "record",
+  "name": "DisruptionDelays",
+  "fields": [
+    {"name": "id", "type": ["null", "string"], "default": null, "doc": "disruption id" },
+    {"name": "status", "type": ["null", "string"], "default": null, "doc": "disruption status" },
+    {"name": "updated_at", "type": ["null", "string"], "default": null, "doc": "last update" },
+    {"name": "message", "type": ["null", "string"], "default": null, "doc": "disruption message for customer" },
+    {"name": "train_id", "type": ["null", "string"], "default": null, "doc": "train id"},
+    {"name": "train_name", "type": ["null", "string"], "default": null, "doc": "train_name"},
+    {"name": "stops", "type": { "type": "array", "items": "ribot.amandine.kafka.app.StopDelays"}},
+    {"name": "delays", "type": { "type": "array", "items": "string"}},
+    {"name": "causes", "type": { "type": "array", "items": "string"}}
+  ]
+}
+]
