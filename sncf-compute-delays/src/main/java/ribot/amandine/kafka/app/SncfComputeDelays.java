@@ -6,6 +6,7 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.StreamsConfig;
 import ribot.amandine.kafka.app.configuration.AppConfig;
+import ribot.amandine.kafka.app.topology.ComputeDelaysTopology;
 
 import java.util.Properties;
 
@@ -44,5 +45,6 @@ public class SncfComputeDelays {
     private void start() {
 
         Properties properties = getKafkaStreamsConfig();
+        new ComputeDelaysTopology(properties);
     }
 }
