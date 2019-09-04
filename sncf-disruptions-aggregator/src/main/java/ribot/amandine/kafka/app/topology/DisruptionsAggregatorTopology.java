@@ -7,15 +7,11 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.StoreBuilder;
-import org.apache.kafka.streams.state.Stores;
 import ribot.amandine.kafka.app.Disruption;
 import ribot.amandine.kafka.app.KeyDisruption;
 import ribot.amandine.kafka.app.aggregators.ComplexAggregators;
 import ribot.amandine.kafka.app.aggregators.SimpleAggregators;
 import ribot.amandine.kafka.app.configuration.AppConfig;
-import ribot.amandine.kafka.app.transformers.DisruptionTransformer;
 
 import java.util.Collections;
 import java.util.Properties;
@@ -38,25 +34,15 @@ public class DisruptionsAggregatorTopology {
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
     }
 
-    private StoreBuilder<KeyValueStore<KeyDisruption, Disruption>> createStateStore(){
-
-        return Stores
-                .keyValueStoreBuilder((Stores.persistentKeyValueStore("disruptions-store")),
-                        keyDisruptionSpecificAvroSerde,
-                        disruptionSpecificAvroSerde);
-    }
-
     private KafkaStreams createTopology(Properties properties) {
 
         keyDisruptionSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), true);
         disruptionSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
 
         StreamsBuilder builder = new StreamsBuilder();
-        builder.addStateStore(this.createStateStore());
 
         KStream<KeyDisruption, Disruption> disruptionKStream = builder
-                .stream(appConfig.getDisruptionTopicName(), Consumed.with(keyDisruptionSpecificAvroSerde, disruptionSpecificAvroSerde))
-                .transform(DisruptionTransformer::new, "disruptions-store")
+                .stream(appConfig.getUniqueDisruptionTopicName(), Consumed.with(keyDisruptionSpecificAvroSerde, disruptionSpecificAvroSerde))
                 .peek(((key, value) -> System.out.println(value.toString())))
                 .filter((key, value) -> key != null && value != null);
 
