@@ -2,14 +2,11 @@ package ribot.amandine.kafka.app.runnable;
 
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
-import org.apache.kafka.clients.producer.*;
-import org.apache.kafka.common.serialization.StringSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import ribot.amandine.kafka.app.Disruption;
 import ribot.amandine.kafka.app.KeyDisruption;
-import ribot.amandine.kafka.app.Train;
 import ribot.amandine.kafka.app.configuration.AppConfig;
 
 import java.util.Properties;

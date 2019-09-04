@@ -20,9 +20,6 @@ import java.util.List;
 public class SimpleAggregators {
 
     private final AppConfig appConfig;
-    private final SpecificAvroSerde<KeyStop> keyStopSpecificAvroSerde = new SpecificAvroSerde<>();
-    private final SpecificAvroSerde<KeyTrain> keyTrainSpecificAvroSerde = new SpecificAvroSerde<>();
-    private final SpecificAvroSerde<KeyCause> keyCauseSpecificAvroSerde = new SpecificAvroSerde<>();
 
     public SimpleAggregators() {
 
@@ -32,9 +29,11 @@ public class SimpleAggregators {
     public void aggregateStopFromStream(KStream<KeyDisruption, Disruption> disruptionKStream) {
 
         // GET STATISTIC OF DISRUPTIONS PER STOP ID
-        SpecificAvroSerde<StopStatistic> stopStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+        final SpecificAvroSerde<KeyStop> keyStopSpecificAvroSerde = new SpecificAvroSerde<>();
+        final SpecificAvroSerde<StopStatistic> stopStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+
+        keyStopSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), true);
         stopStatisticSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
-        keyStopSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
 
         KStream<KeyStop, Stop> disruptionStreamPerStopName = disruptionKStream
                 .flatMap((key, value) -> {
@@ -105,9 +104,11 @@ public class SimpleAggregators {
     public void aggregateTrainFromStream(KStream<KeyDisruption, Disruption> disruptionKStream) {
 
         // GET STATISTIC OF DISRUPTIONS PER TRAIN ID
-        SpecificAvroSerde<TrainStatistic> trainStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+        final SpecificAvroSerde<KeyTrain> keyTrainSpecificAvroSerde = new SpecificAvroSerde<>();
+        final SpecificAvroSerde<TrainStatistic> trainStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+
+        keyTrainSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), true);
         trainStatisticSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
-        keyTrainSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
 
         KStream<KeyTrain, Train> disruptionStreamPerTrainName = disruptionKStream
                 .map((key, value) -> KeyValue.pair(KeyTrain.newBuilder().setId(value.getTrain().getId()).build(), value.getTrain()));
@@ -167,9 +168,11 @@ public class SimpleAggregators {
     public void aggregateCauseFromStream(KStream<KeyDisruption, Disruption> disruptionKStream) {
 
         // GET STATISTIC OF DISRUPTIONS PER CAUSE
-        SpecificAvroSerde<CauseStatistic> causeStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+        final SpecificAvroSerde<KeyCause> keyCauseSpecificAvroSerde = new SpecificAvroSerde<>();
+        final SpecificAvroSerde<CauseStatistic> causeStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+
+        keyCauseSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), true);
         causeStatisticSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
-        keyCauseSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
 
         KStream<KeyCause, Disruption> disruptionStreamPerCause = disruptionKStream
                 .filter((key, value) -> value.getMessage() != null)
