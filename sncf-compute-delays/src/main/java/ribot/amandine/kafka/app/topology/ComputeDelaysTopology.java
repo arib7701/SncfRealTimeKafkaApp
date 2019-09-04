@@ -18,8 +18,8 @@ import java.util.Properties;
 public class ComputeDelaysTopology {
 
     private final AppConfig appConfig;
-    private final SpecificAvroSerde<Disruption> disruptionSpecificAvroSerde = new SpecificAvroSerde<>();
     private final SpecificAvroSerde<KeyDisruption> keyDisruptionSpecificAvroSerde = new SpecificAvroSerde<>();
+    private final SpecificAvroSerde<Disruption> disruptionSpecificAvroSerde = new SpecificAvroSerde<>();
 
     public ComputeDelaysTopology(Properties properties) {
 
@@ -31,8 +31,8 @@ public class ComputeDelaysTopology {
 
     private KafkaStreams createTopology(Properties properties) {
 
+        keyDisruptionSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), true);
         disruptionSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
-        keyDisruptionSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
 
         StreamsBuilder builder = new StreamsBuilder();
 
@@ -87,23 +87,23 @@ public class ComputeDelaysTopology {
         int calculatedDelayArrival;
         int calculatedDelayDeparture;
 
-        String plannedArrivalToStation = timeInformation.getBaseArrivalTime().toString();
-        String newArrivalToStation = timeInformation.getNewArrivalTime().toString();
+        String plannedArrivalToStation = timeInformation.getBaseArrivalTime() == null ? "" : timeInformation.getBaseArrivalTime().toString();
+        String newArrivalToStation = timeInformation.getNewArrivalTime() == null ? "" : timeInformation.getNewArrivalTime().toString();
 
-        String plannedDepartureOfStation = timeInformation.getBaseDepartureTime().toString();
-        String newDepartureOfStation = timeInformation.getNewDepartureTime().toString();
+        String plannedDepartureOfStation = timeInformation.getBaseDepartureTime() == null ? "" : timeInformation.getBaseDepartureTime().toString();
+        String newDepartureOfStation = timeInformation.getNewDepartureTime() == null ? "" : timeInformation.getNewDepartureTime().toString();
 
 
         if(plannedArrivalToStation == "" || newArrivalToStation == "" || plannedArrivalToStation.equals(newArrivalToStation) ) {
             calculatedDelayArrival = 0;
         } else {
-            calculatedDelayArrival = Integer.parseInt(plannedArrivalToStation) - Integer.parseInt(newArrivalToStation);
+            calculatedDelayArrival = Integer.parseInt(newArrivalToStation) - Integer.parseInt(plannedArrivalToStation);
         }
 
         if(plannedDepartureOfStation == "" || newDepartureOfStation == "" || plannedDepartureOfStation.equals(newDepartureOfStation)) {
             calculatedDelayDeparture = 0;
         } else {
-            calculatedDelayDeparture = Integer.parseInt(plannedDepartureOfStation) - Integer.parseInt(newDepartureOfStation);
+            calculatedDelayDeparture = Integer.parseInt(newDepartureOfStation) - Integer.parseInt(plannedDepartureOfStation);
         }
 
         if(calculatedDelayDeparture >= calculatedDelayArrival) {

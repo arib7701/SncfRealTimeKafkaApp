@@ -32,9 +32,7 @@ public class AppConfig {
         return disruptionTopicName;
     }
 
-    public String getDisruptionDelaysTopicName() {
-        return disruptionTopicName;
-    }
+    public String getDisruptionDelaysTopicName() { return disruptionDelaysTopicName; }
 
     public String getApplicationId() {
         return applicationId;
