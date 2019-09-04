@@ -37,7 +37,7 @@ public class ComputeDelaysTopology {
         StreamsBuilder builder = new StreamsBuilder();
 
         KStream<KeyDisruption, Disruption> disruptionKStream = builder
-                .stream(appConfig.getDisruptionTopicName(), Consumed.with(keyDisruptionSpecificAvroSerde, disruptionSpecificAvroSerde))
+                .stream(appConfig.getUniqueDisruptionTopicName(), Consumed.with(keyDisruptionSpecificAvroSerde, disruptionSpecificAvroSerde))
                 .peek(((key, value) -> System.out.println(value.toString())))
                 .filter((key, value) -> key != null && value != null);
 
