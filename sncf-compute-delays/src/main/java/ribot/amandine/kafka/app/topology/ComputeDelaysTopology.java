@@ -7,19 +7,23 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
+import org.joda.time.DateTime;
+import org.joda.time.Hours;
+import org.joda.time.Minutes;
 import ribot.amandine.kafka.app.*;
 import ribot.amandine.kafka.app.configuration.AppConfig;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class ComputeDelaysTopology {
 
     private final AppConfig appConfig;
     private final SpecificAvroSerde<KeyDisruption> keyDisruptionSpecificAvroSerde = new SpecificAvroSerde<>();
     private final SpecificAvroSerde<Disruption> disruptionSpecificAvroSerde = new SpecificAvroSerde<>();
+    private final DateFormat timeFormat = new SimpleDateFormat("hhmmss");
 
     public ComputeDelaysTopology(Properties properties) {
 
@@ -66,7 +70,12 @@ public class ComputeDelaysTopology {
 
             stopDelays.add(stopDelay);
             causes.add(stop.getTimes().getCause().toString());
-            delays.add(calculateDelays(stop.getTimes()));
+
+            try {
+                delays.add(calculateDelays(stop.getTimes()));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
 
         return DisruptionDelays.newBuilder()
@@ -81,29 +90,24 @@ public class ComputeDelaysTopology {
                 .build();
     }
 
-    private String calculateDelays(Information timeInformation) {
+    private String calculateDelays(Information timeInformation) throws ParseException {
 
         String calculatedDelay;
-        int calculatedDelayArrival;
-        int calculatedDelayDeparture;
+        int calculatedDelayArrival = 0;
+        int calculatedDelayDeparture = 0;
 
-        String plannedArrivalToStation = timeInformation.getBaseArrivalTime() == null ? "" : timeInformation.getBaseArrivalTime().toString();
-        String newArrivalToStation = timeInformation.getNewArrivalTime() == null ? "" : timeInformation.getNewArrivalTime().toString();
+        if(timeInformation.getBaseArrivalTime() != null && timeInformation.getNewArrivalTime() != null) {
 
-        String plannedDepartureOfStation = timeInformation.getBaseDepartureTime() == null ? "" : timeInformation.getBaseDepartureTime().toString();
-        String newDepartureOfStation = timeInformation.getNewDepartureTime() == null ? "" : timeInformation.getNewDepartureTime().toString();
+            DateTime plannedArrivalToStation = new DateTime(timeFormat.parse(timeInformation.getBaseArrivalTime().toString()));
+            DateTime newArrivalToStation = new DateTime(timeFormat.parse(timeInformation.getNewArrivalTime().toString()));
+            calculatedDelayArrival = Minutes.minutesBetween(plannedArrivalToStation, newArrivalToStation).getMinutes() % 60;
 
-
-        if(plannedArrivalToStation == "" || newArrivalToStation == "" || plannedArrivalToStation.equals(newArrivalToStation) ) {
-            calculatedDelayArrival = 0;
-        } else {
-            calculatedDelayArrival = Integer.parseInt(newArrivalToStation) - Integer.parseInt(plannedArrivalToStation);
         }
 
-        if(plannedDepartureOfStation == "" || newDepartureOfStation == "" || plannedDepartureOfStation.equals(newDepartureOfStation)) {
-            calculatedDelayDeparture = 0;
-        } else {
-            calculatedDelayDeparture = Integer.parseInt(newDepartureOfStation) - Integer.parseInt(plannedDepartureOfStation);
+        if(timeInformation.getBaseDepartureTime() != null && timeInformation.getNewDepartureTime() != null) {
+            DateTime plannedDepartureOfStation = new DateTime(timeFormat.parse(timeInformation.getBaseDepartureTime().toString()));
+            DateTime newDepartureOfStation = new DateTime(timeFormat.parse(timeInformation.getNewDepartureTime().toString()));
+            calculatedDelayDeparture = Minutes.minutesBetween(plannedDepartureOfStation, newDepartureOfStation).getMinutes() % 60;
         }
 
         if(calculatedDelayDeparture >= calculatedDelayArrival) {
