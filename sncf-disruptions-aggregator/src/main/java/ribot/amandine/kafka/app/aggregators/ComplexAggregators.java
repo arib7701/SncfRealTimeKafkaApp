@@ -33,10 +33,10 @@ public class ComplexAggregators {
 
         // GET AGGREGATION OF DISRUPTIONS PER STOP ID AND CAUSE
 
-        SpecificAvroSerde<StopCauseStatistic> stopCauseStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
         SpecificAvroSerde<KeyStopCause> keyStopCauseSpecificAvroSerde = new SpecificAvroSerde<>();
+        SpecificAvroSerde<StopCauseStatistic> stopCauseStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+        keyStopCauseSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), true);
         stopCauseStatisticSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
-        keyStopCauseSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
 
         KStream<KeyDisruptionStop, DisruptionStop> disruptionStreamPerStopName = disruptionKStream
                 .flatMap((key, value) -> {
@@ -90,10 +90,10 @@ public class ComplexAggregators {
 
         // GET AGGREGATION OF DISRUPTIONS PER STOP ID AND TRAIN
 
-        SpecificAvroSerde<StopTrainStatistic> stopTrainStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
         SpecificAvroSerde<KeyStopTrain> keyStopTrainSpecificAvroSerde = new SpecificAvroSerde<>();
+        SpecificAvroSerde<StopTrainStatistic> stopTrainStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+        keyStopTrainSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), true);
         stopTrainStatisticSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
-        keyStopTrainSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
 
         KStream<KeyDisruptionStopTrain, DisruptionStopTrain> disruptionStreamPerStopName = disruptionKStream
                 .flatMap((key, value) -> {
@@ -147,10 +147,10 @@ public class ComplexAggregators {
 
         // GET AGGREGATION OF DISRUPTIONS PER TRAIN AND CAUSE
 
-        SpecificAvroSerde<TrainCauseStatistic> trainCauseStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
         SpecificAvroSerde<KeyTrainCause> keyTrainCauseSpecificAvroSerde = new SpecificAvroSerde<>();
+        SpecificAvroSerde<TrainCauseStatistic> trainCauseStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+        keyTrainCauseSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), true);
         trainCauseStatisticSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
-        keyTrainCauseSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
 
 
         KTable<KeyTrainCause, TrainCauseStatistic> trainCauseStatisticsKTable = disruptionKStream
@@ -191,10 +191,10 @@ public class ComplexAggregators {
 
         // GET AGGREGATION OF DISRUPTIONS PER STOP AND TRAIN AND CAUSE
 
-        SpecificAvroSerde<StopTrainCauseStatistic> stopTrainCauseStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
         SpecificAvroSerde<KeyStopTrainCause> keyStopTrainCauseSpecificAvroSerde = new SpecificAvroSerde<>();
+        SpecificAvroSerde<StopTrainCauseStatistic> stopTrainCauseStatisticSpecificAvroSerde = new SpecificAvroSerde<>();
+        keyStopTrainCauseSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), true);
         stopTrainCauseStatisticSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
-        keyStopTrainCauseSpecificAvroSerde.configure(Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, appConfig.getSchemaRegistryUrl()), false);
 
         KStream<KeyDisruptionStopTrain, DisruptionStopTrain> disruptionStreamPerStopName = disruptionKStream
                 .flatMap((key, value) -> {
